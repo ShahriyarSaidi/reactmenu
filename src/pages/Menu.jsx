@@ -31,7 +31,12 @@ export default function Menu() {
   const sectionRefs = useRef({});
 
   const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const [cart, setCart] = useState({});
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('maison_cart');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
   const [viewMode, setViewMode] = useState(() => {
     try { return localStorage.getItem('maison_viewMode') || 'grid'; } catch { return 'grid'; }
   });
@@ -60,6 +65,12 @@ export default function Menu() {
     try { localStorage.setItem('maison_viewMode', mode); } catch {}
     setViewMode(mode);
   };
+
+
+  // ✅ Cart dəyişəndə localStorage-a yaz
+  useEffect(() => {
+    try { localStorage.setItem('maison_cart', JSON.stringify(cart)); } catch {}
+  }, [cart]);
 
   const addToCart = useCallback((id) => setCart((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 })), []);
   const removeFromCart = useCallback((id) => setCart((prev) => {
@@ -289,7 +300,7 @@ export default function Menu() {
         )}
       </AnimatePresence>
 
-      <CartBar cart={cart} items={menuItems} onAdd={addToCart} onRemove={removeFromCart} onClear={() => setCart({})} />
+      <CartBar cart={cart} items={menuItems} onAdd={addToCart} onRemove={removeFromCart} onClear={() => { setCart({}); try { localStorage.removeItem('maison_cart'); } catch {} }} />
     </div>
   );
 }
