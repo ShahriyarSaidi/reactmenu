@@ -295,7 +295,7 @@ export default function Menu() {
               border: '1px solid rgba(212,163,115,0.15)',
               pointerEvents: 'none',
             }} />
-            <ArrowUp style={{ width: 16, height: 16, filter: 'drop-shadow(0 0 4px rgba(212,163,115,0.5))' }} />
+            <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}><ArrowUp style={{ width: 16, height: 16, filter: "drop-shadow(0 0 4px rgba(212,163,115,0.5))" }} /></motion.div>
           </motion.button>
         )}
       </AnimatePresence>
