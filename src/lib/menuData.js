@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { menuItems as fallbackMenuItems } from '../data/menuItems';
 import { optimizeCloudinaryUrl } from './cloudinary';
 
-const CACHE_KEY = 'maison_menu_items_cache_v1';
+const CACHE_KEY = 'maison_menu_items_cache_v2';
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
 const sheetUrl = import.meta.env.VITE_GOOGLE_SHEETS_CSV_URL;
