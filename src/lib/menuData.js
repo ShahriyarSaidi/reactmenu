@@ -2,41 +2,30 @@ import { useEffect, useState } from 'react';
 import { menuItems as fallbackMenuItems } from '../data/menuItems';
 import { optimizeCloudinaryUrl } from './cloudinary';
 
-const CACHE_KEY = 'maison_menu_items_cache_v3';
+const CACHE_KEY = 'maison_menu_items_cache_v2';
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
 const sheetUrl = import.meta.env.VITE_GOOGLE_SHEETS_CSV_URL;
 
 export function useMenuItems() {
-  // ✅ Cache-i oxuma — birbaşa fallback ilə başla, sheet gələndə əvəz et
-  const [items, setItems] = useState(() => normalizeMenuItems(fallbackMenuItems));
-  const [status, setStatus] = useState('loading');
+  const [items, setItems] = useState(() => getCachedItems() || normalizeMenuItems(fallbackMenuItems));
+  const [status, setStatus] = useState(getCachedItems() ? 'cached' : 'fallback');
 
   useEffect(() => {
     let ignore = false;
 
-    // Köhnə cache versiyalarını təmizlə
-    try {
-      ['v1', 'v2'].forEach(v => localStorage.removeItem(`maison_menu_items_cache_${v}`));
-    } catch {}
-
     async function loadMenu() {
-      if (!sheetUrl) {
-        setStatus('fallback');
-        return;
-      }
+      if (!sheetUrl) return;
 
-      // v3 cache varsa işlət
       const cachedItems = getCachedItems();
       if (cachedItems) {
-        if (!ignore) {
-          setItems(cachedItems);
-          setStatus('cached');
-        }
+        setItems(cachedItems);
+        setStatus('cached');
         return;
       }
 
       try {
+        setStatus('loading');
         const response = await fetch(sheetUrl, { cache: 'no-store' });
         if (!response.ok) throw new Error(`Google Sheets returned ${response.status}`);
 
@@ -59,7 +48,9 @@ export function useMenuItems() {
     }
 
     loadMenu();
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return { items, status };
@@ -77,7 +68,7 @@ function getCachedItems() {
       return null;
     }
 
-    return cache.items;
+    return normalizeMenuItems(cache.items);
   } catch {
     return null;
   }
@@ -120,8 +111,10 @@ function parsePrice(value) {
   const cleaned = stringValue(value)
     .replace(',', '.')
     .replace(/[^0-9.]/g, '');
+
   return Number.parseFloat(cleaned) || 0;
 }
+
 
 function stringValue(value) {
   return value == null ? '' : String(value).trim();
@@ -130,6 +123,7 @@ function stringValue(value) {
 function parseCsv(csv) {
   const rows = csvToRows(csv);
   const headers = rows.shift()?.map((header) => header.trim()) || [];
+
   return rows
     .filter((row) => row.some((cell) => cell.trim()))
     .map((row) => headers.reduce((item, header, index) => {
