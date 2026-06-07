@@ -1,9 +1,36 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 
 const gold = '#D4A373';
+
+// Şəkil yüklənənə qədər skeleton, yüklənəndə fade-in
+function CardImage({ src, alt, className, style }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      {/* Skeleton */}
+      {!loaded && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 1.4s infinite',
+        }} />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        style={{ ...style, opacity: loaded ? 1 : 0, transition: 'opacity 0.35s ease' }}
+        loading="eager"
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+      />
+    </div>
+  );
+}
 
 const FoodCard = memo(function FoodCard({ item, qty, onAdd, onRemove, horizontal = false, highlight = '' }) {
   const { t } = useLang();
@@ -67,8 +94,8 @@ const FoodCard = memo(function FoodCard({ item, qty, onAdd, onRemove, horizontal
           border: `1px solid ${qty > 0 ? 'rgba(212,163,115,0.35)' : 'rgba(255,255,255,0.06)'}`,
         }}>
         {item.image ? (
-          <div className="w-28 shrink-0 overflow-hidden">
-            <img src={item.image} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
+          <div className="w-28 shrink-0 overflow-hidden" style={{ position: 'relative' }}>
+            <CardImage src={item.image} alt={item.name} className="w-full h-full object-cover" />
           </div>
         ) : (
           <div className="w-1 shrink-0" style={{ background: 'linear-gradient(180deg, rgba(212,163,115,0.5), rgba(212,163,115,0.05))' }} />
@@ -101,7 +128,11 @@ const FoodCard = memo(function FoodCard({ item, qty, onAdd, onRemove, horizontal
 
       {item.image ? (
         <div className="aspect-[4/3] overflow-hidden shrink-0">
-          <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+          <CardImage
+            src={item.image}
+            alt={item.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
         </div>
       ) : null}
 
