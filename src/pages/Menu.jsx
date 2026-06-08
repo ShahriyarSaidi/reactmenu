@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CategoryNav from '../components/menu/CategoryNav';
+import CategoryNav, { getTabForCategory } from '../components/menu/CategoryNav';
 import FoodCard from '../components/menu/FoodCard';
 import CartBar from '../components/menu/CartBar';
 import SearchBar from '../components/menu/SearchBar';
@@ -31,6 +31,7 @@ export default function Menu() {
   const sectionRefs = useRef({});
 
   const [activeCategory, setActiveCategory] = useState(categories[0]);
+  const [activeTab, setActiveTab] = useState('food');
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem('maison_cart');
@@ -116,6 +117,7 @@ export default function Menu() {
         const rect = el.getBoundingClientRect();
         if (rect.top <= navHeight && rect.bottom > navHeight) {
           setActiveCategory(cat);
+          setActiveTab(getTabForCategory(cat));
           break;
         }
       }
@@ -174,7 +176,7 @@ export default function Menu() {
 
       <div ref={stickyRef} className="sticky top-0 z-20">
         <SearchBar value={search} onChange={setSearch} viewMode={viewMode} onViewChange={handleViewChange} />
-        <CategoryNav categories={categories} activeCategory={activeCategory} onSelect={scrollToCategory} />
+        <CategoryNav categories={categories} activeCategory={activeCategory} onSelect={scrollToCategory} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
       <div className="relative z-10 px-4 pb-36 pt-6 space-y-16">
