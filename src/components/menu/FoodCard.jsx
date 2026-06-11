@@ -1,34 +1,13 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 
 const gold = '#D4A373';
 
-// Şəkil yüklənənə qədər skeleton, yüklənəndə fade-in
 function CardImage({ src, alt, className, style }) {
-  const [loaded, setLoaded] = useState(false);
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* Skeleton */}
-      {!loaded && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%)',
-          backgroundSize: '200% 100%',
-          animation: 'shimmer 1.4s infinite',
-        }} />
-      )}
-      <img
-        src={src}
-        alt={alt}
-        className={className}
-        style={{ ...style, opacity: loaded ? 1 : 0, transition: 'opacity 0.35s ease' }}
-        loading="eager"
-        decoding="async"
-        onLoad={() => setLoaded(true)}
-      />
-    </div>
+    <img src={src} alt={alt} className={className} style={style} loading="eager" />
   );
 }
 
@@ -160,4 +139,4 @@ const FoodCard = memo(function FoodCard({ item, qty, onAdd, onRemove, horizontal
   );
 });
 
-export default FoodCard;
+export default FoodCard;q

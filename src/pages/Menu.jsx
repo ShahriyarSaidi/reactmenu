@@ -94,14 +94,23 @@ export default function Menu() {
 
   const getStickyHeight = () => stickyRef.current ? stickyRef.current.offsetHeight + 8 : 110;
 
+  const getAbsoluteTop = (el) => {
+    let top = 0;
+    let node = el;
+    while (node) {
+      top += node.offsetTop;
+      node = node.offsetParent;
+    }
+    return top;
+  };
+
   const scrollToCategory = useCallback((cat) => {
     isScrollingRef.current = true;
     setActiveCategory(cat);
     const el = sectionRefs.current[cat];
     if (el) {
-      const navHeight = getStickyHeight();
-      const rect = el.getBoundingClientRect();
-      const scrollTop = window.scrollY + rect.top - navHeight;
+      const navHeight = stickyRef.current ? stickyRef.current.offsetHeight : 100;
+      const scrollTop = getAbsoluteTop(el) - navHeight - 8;
       window.scrollTo({ top: scrollTop, behavior: 'smooth' });
       setTimeout(() => { isScrollingRef.current = false; }, 900);
     }
@@ -109,17 +118,16 @@ export default function Menu() {
 
   const handleScroll = useCallback(() => {
     if (isScrollingRef.current) return;
-    const navHeight = getStickyHeight();
+    const navHeight = stickyRef.current ? stickyRef.current.offsetHeight : 100;
+    const scrollPos = window.scrollY + navHeight + 16;
+    let found = categories[0];
     for (const cat of categories) {
       const el = sectionRefs.current[cat];
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        if (rect.top <= navHeight && rect.bottom > navHeight) {
-          setActiveCategory(cat);
-          break;
-        }
+      if (el && getAbsoluteTop(el) <= scrollPos) {
+        found = cat;
       }
     }
+    setActiveCategory(found);
   }, [categories]);
 
   useEffect(() => {
@@ -213,11 +221,11 @@ export default function Menu() {
             <motion.section
               key={cat}
               ref={(el) => (sectionRefs.current[cat] = el)}
-              className="scroll-mt-[110px] relative"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              className="relative"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.7, delay: catIdx * 0.04, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 0.5, delay: catIdx * 0.04 }}
             >
               <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-48 h-24 pointer-events-none"
                 style={{ background: `radial-gradient(ellipse, ${radialColor} 0%, transparent 70%)` }} />
@@ -239,7 +247,7 @@ export default function Menu() {
                   className={viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid grid-cols-1 md:grid-cols-2 gap-3'}
                 >
                   {grouped[cat].map((item, idx) => (
-                    <motion.div key={item.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: idx * 0.05 }}>
+                    <motion.div key={item.id} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: idx * 0.05 }}>
                       <FoodCard item={localizeItem(item, lang)} qty={cart[item.id] || 0}
                         onAdd={() => addToCart(item.id)} onRemove={() => removeFromCart(item.id)}
                         horizontal={viewMode === 'list'} highlight={search} />
