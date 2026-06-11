@@ -139,4 +139,4 @@ const FoodCard = memo(function FoodCard({ item, qty, onAdd, onRemove, horizontal
   );
 });
 
-export default FoodCard;q
+export default FoodCard;
